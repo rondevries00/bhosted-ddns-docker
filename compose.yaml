@@ -1,0 +1,175 @@
+services:
+  bhosted-ddns:
+    image: alpine:3.22
+    container_name: bhosted-ddns
+
+    restart: unless-stopped
+
+    env_file:
+      - .env
+
+    environment:
+      TZ: "${TZ:-Europe/Amsterdam}"
+      CHECK_INTERVAL_SECONDS: "${CHECK_INTERVAL_SECONDS:-900}"
+
+    volumes:
+      - ./data:/data
+
+    security_opt:
+      - no-new-privileges:true
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
+        max-file: "3"
+
+    command:
+      - /bin/sh
+      - -c
+      - |
+        set -eu
+
+        apk add --no-cache \
+          curl \
+          bind-tools \
+          tzdata \
+          ca-certificates
+
+        mkdir -p /data
+
+        cat > /usr/local/bin/check-ddns.sh <<'SCRIPT'
+        #!/bin/sh
+        set -eu
+
+        log() {
+          printf '[%s] %s\n' \
+            "$(date '+%Y-%m-%d %H:%M:%S %Z')" \
+            "$*"
+        }
+
+        : "${BHOSTED_HOST:?BHOSTED_HOST is verplicht}"
+        : "${BHOSTED_USER:?BHOSTED_USER is verplicht}"
+        : "${BHOSTED_PASSWORD:?BHOSTED_PASSWORD is verplicht}"
+
+        log "Controle publiek IPv4-adres gestart"
+
+        if ! PUBLIC_IP="$$(
+          curl \
+            --ipv4 \
+            --fail \
+            --silent \
+            --show-error \
+            --max-time 20 \
+            "https://api.ipify.org" |
+          tr -d '\r\n'
+        )"; then
+          log "FOUT: publiek IPv4-adres kon niet worden opgehaald" >&2
+          exit 1
+        fi
+
+        if ! printf '%s\n' "$$PUBLIC_IP" | awk -F. '
+          NF != 4 {
+            exit 1
+          }
+
+          {
+            for (i = 1; i <= 4; i++) {
+              if ($$i !~ /^[0-9]+$$/ || $$i < 0 || $$i > 255) {
+                exit 1
+              }
+            }
+          }
+        '; then
+          log "FOUT: ongeldig publiek IPv4-adres ontvangen: $$PUBLIC_IP" >&2
+          exit 1
+        fi
+
+        LAST_IP="$$(cat /data/last_successful_ip 2>/dev/null || true)"
+
+        if [ "$$PUBLIC_IP" = "$$LAST_IP" ]; then
+          log "IP ongewijzigd: $$PUBLIC_IP"
+          log "bHosted is niet aangeroepen"
+          exit 0
+        fi
+
+        DNS_IP="$$(
+          dig +short A "$$BHOSTED_HOST" 2>/dev/null |
+          awk '
+            /^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$$/ {
+              print
+              exit
+            }
+          ' || true
+        )"
+
+        if [ -z "$$LAST_IP" ] && [ "$$DNS_IP" = "$$PUBLIC_IP" ]; then
+          printf '%s\n' "$$PUBLIC_IP" > /data/last_successful_ip
+
+          log "Eerste controle: DNS staat al correct op $$PUBLIC_IP"
+          log "Statusbestand aangemaakt; bHosted is niet aangeroepen"
+          exit 0
+        fi
+
+        if [ -n "$$LAST_IP" ]; then
+          log "IP-wijziging vastgesteld: $$LAST_IP -> $$PUBLIC_IP"
+        else
+          log "Geen eerder IP opgeslagen; huidig publiek IP: $$PUBLIC_IP"
+          log "Huidig DNS-adres: $${DNS_IP:-niet gevonden}"
+        fi
+
+        log "bHosted DynDNS wordt bijgewerkt"
+
+        if ! RESPONSE="$$(
+          curl \
+            --ipv4 \
+            --fail \
+            --silent \
+            --show-error \
+            --max-time 30 \
+            --get \
+            --data-urlencode "type=2" \
+            --data-urlencode "host=$$BHOSTED_HOST" \
+            --data-urlencode "ip=$$PUBLIC_IP" \
+            --data-urlencode "user=$$BHOSTED_USER" \
+            --data-urlencode "password=$$BHOSTED_PASSWORD" \
+            "https://webservices.bhosted.nl/dyndns" |
+          tr -d '\r\n'
+        )"; then
+          log "FOUT: de bHosted-aanroep is mislukt" >&2
+          log "Het nieuwe IP is niet als succesvol opgeslagen" >&2
+          exit 1
+        fi
+
+        case "$$RESPONSE" in
+          good*|nochg*)
+            TEMP_FILE="/data/last_successful_ip.tmp"
+
+            printf '%s\n' "$$PUBLIC_IP" > "$$TEMP_FILE"
+            mv "$$TEMP_FILE" /data/last_successful_ip
+
+            log "bHosted antwoord: $$RESPONSE"
+            log "Nieuw IP succesvol opgeslagen: $$PUBLIC_IP"
+            ;;
+
+          *)
+            log "FOUT: geen herkenbare succesmelding van bHosted" >&2
+            log "bHosted antwoord: $${RESPONSE:-leeg antwoord}" >&2
+            log "Het nieuwe IP is niet als succesvol opgeslagen" >&2
+            exit 1
+            ;;
+        esac
+        SCRIPT
+
+        chmod 700 /usr/local/bin/check-ddns.sh
+
+        echo "bHosted DynDNS-container gestart"
+        echo "Hostnaam: $${BHOSTED_HOST}"
+        echo "Controle-interval: $${CHECK_INTERVAL_SECONDS} seconden"
+        echo "Tijdzone: $${TZ}"
+
+        while true
+        do
+          /usr/local/bin/check-ddns.sh || true
+          sleep "$${CHECK_INTERVAL_SECONDS}"
+        done
