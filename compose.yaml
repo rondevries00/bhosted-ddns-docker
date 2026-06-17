@@ -54,6 +54,7 @@ services:
           exit 1
         fi
 
+        cat > /usr/local/bin/check-ddns.sh <<'SCRIPT'
         #!/bin/sh
         set -eu
 
