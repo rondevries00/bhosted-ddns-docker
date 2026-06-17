@@ -22,8 +22,8 @@ De map `data` wordt gebruikt voor de runtime-status.
 Maak `.env` op basis van `.env.example`:
 
 ```env
-BHOSTED_HOST=jouwdomein.nl
-BHOSTED_USER=jouwinloguserid
+BHOSTED_HOST=home.example.com
+BHOSTED_USER=jouw_bhosted_userid
 BHOSTED_PASSWORD=VUL_HIER_HET_BHOSTED_MD5_WACHTWOORD_IN
 TZ=Europe/Amsterdam
 CHECK_INTERVAL_SECONDS=900
