@@ -51,21 +51,21 @@ Voorbeeld bij eerste start wanneer DNS al correct staat:
 
 ```text
 bHosted DynDNS-container gestart
-Hostnaam: home.rondevriesict.nl
+Hostnaam: home.example.com
 Controle-interval: 900 seconden
 Tijdzone: Europe/Amsterdam
 [2026-06-17 22:30:00 CEST] Controle publiek IPv4-adres gestart
-[2026-06-17 22:30:00 CEST] Eerste controle: DNS staat al correct op 86.89.84.210
+[2026-06-17 22:30:00 CEST] Eerste controle: DNS staat al correct op 203.0.113.10
 [2026-06-17 22:30:00 CEST] Statusbestand aangemaakt; bHosted is niet aangeroepen
 ```
 
 Voorbeeld bij wijziging:
 
 ```text
-[2026-06-18 08:15:00 CEST] IP-wijziging vastgesteld: 86.89.84.210 -> 86.89.84.211
+[2026-06-18 08:15:00 CEST] IP-wijziging vastgesteld: 203.0.113.10 -> 203.0.113.11
 [2026-06-18 08:15:00 CEST] bHosted DynDNS wordt bijgewerkt
-[2026-06-18 08:15:01 CEST] bHosted antwoord: good 86.89.84.211
-[2026-06-18 08:15:01 CEST] Nieuw IP succesvol opgeslagen: 86.89.84.211
+[2026-06-18 08:15:01 CEST] bHosted antwoord: good 203.0.113.11
+[2026-06-18 08:15:01 CEST] Nieuw IP succesvol opgeslagen: 203.0.113.11
 ```
 
 ## 5. Belangrijk
