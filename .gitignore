@@ -1,0 +1,13 @@
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+
+# Runtime state
+data/*
+!data/.gitkeep
+
+# Logs and operating-system files
+*.log
+.DS_Store
+Thumbs.db
