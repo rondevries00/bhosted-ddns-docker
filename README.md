@@ -21,6 +21,8 @@ De container controleert periodiek het actuele publieke IPv4-adres en roept bHos
 ├── compose.yaml
 ├── .env.example
 ├── .gitignore
+├── README.md
+├── LICENSE
 ├── data/
 │   └── .gitkeep
 └── docs/
