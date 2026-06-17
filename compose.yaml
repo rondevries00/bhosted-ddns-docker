@@ -38,16 +38,6 @@ services:
 
         mkdir -p /data
 
-        cat > /usr/local/bin/check-ddns.sh <<'SCRIPT'
-        #!/bin/sh
-        set -eu
-
-        log() {
-          printf '[%s] %s\n' \
-            "$(date '+%Y-%m-%d %H:%M:%S %Z')" \
-            "$*"
-        }
-
         : "$${BHOSTED_HOST:?BHOSTED_HOST is verplicht}"
         : "$${BHOSTED_USER:?BHOSTED_USER is verplicht}"
         : "$${BHOSTED_PASSWORD:?BHOSTED_PASSWORD is verplicht}"
@@ -63,6 +53,15 @@ services:
           echo "CHECK_INTERVAL_SECONDS moet minimaal 60 seconden zijn" >&2
           exit 1
         fi
+
+        #!/bin/sh
+        set -eu
+
+        log() {
+          printf '[%s] %s\n' \
+            "$(date '+%Y-%m-%d %H:%M:%S %Z')" \
+            "$*"
+        }
 
         log "Controle publiek IPv4-adres gestart"
 
