@@ -52,6 +52,18 @@ services:
         : "$${BHOSTED_USER:?BHOSTED_USER is verplicht}"
         : "$${BHOSTED_PASSWORD:?BHOSTED_PASSWORD is verplicht}"
 
+        case "$${CHECK_INTERVAL_SECONDS}" in
+          ''|*[!0-9]*)
+            echo "CHECK_INTERVAL_SECONDS moet een geheel getal zijn" >&2
+            exit 1
+            ;;
+        esac
+
+        if [ "$${CHECK_INTERVAL_SECONDS}" -lt 60 ]; then
+          echo "CHECK_INTERVAL_SECONDS moet minimaal 60 seconden zijn" >&2
+          exit 1
+        fi
+
         log "Controle publiek IPv4-adres gestart"
 
         if ! PUBLIC_IP="$$(
