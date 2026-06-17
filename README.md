@@ -1,4 +1,4 @@
-# bHosted DynDNS Docker
+# bHosted DynDNS Docker (Ugreen)
 Getest op Ugreen UGOS 1.16.0.0089
 
 Kleine Docker Compose-container voor bHosted DynDNS.
