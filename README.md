@@ -48,8 +48,8 @@ cp .env.example .env
 Pas daarna `.env` aan:
 
 ```env
-BHOSTED_HOST=jouwdomein.nl
-BHOSTED_USER=jouwuserid
+BHOSTED_HOST=home.example.com
+BHOSTED_USER=jouw_bhosted_userid
 BHOSTED_PASSWORD=VUL_HIER_HET_BHOSTED_MD5_WACHTWOORD_IN
 TZ=Europe/Amsterdam
 CHECK_INTERVAL_SECONDS=900
