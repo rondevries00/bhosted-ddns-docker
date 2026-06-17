@@ -60,8 +60,8 @@ services:
 
         log() {
           printf '[%s] %s\n' \
-            "$(date '+%Y-%m-%d %H:%M:%S %Z')" \
-            "$*"
+            "$$(date '+%Y-%m-%d %H:%M:%S %Z')" \
+            "$$*"
         }
 
         log "Controle publiek IPv4-adres gestart"
