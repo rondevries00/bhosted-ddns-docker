@@ -48,9 +48,9 @@ services:
             "$*"
         }
 
-        : "${BHOSTED_HOST:?BHOSTED_HOST is verplicht}"
-        : "${BHOSTED_USER:?BHOSTED_USER is verplicht}"
-        : "${BHOSTED_PASSWORD:?BHOSTED_PASSWORD is verplicht}"
+        : "$${BHOSTED_HOST:?BHOSTED_HOST is verplicht}"
+        : "$${BHOSTED_USER:?BHOSTED_USER is verplicht}"
+        : "$${BHOSTED_PASSWORD:?BHOSTED_PASSWORD is verplicht}"
 
         log "Controle publiek IPv4-adres gestart"
 
